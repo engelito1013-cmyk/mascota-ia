@@ -1,6 +1,7 @@
 // Mascota IA - placa Waveshare ESP32-S3-LCD-2 para el firmware xiaozhi-esp32.
 // Pantalla = cara de la mascota, INMP441 = oído, MAX98357A = voz,
 // QMI8658 = se "marea" si la agitas, botón externo = mantén pulsado para hablar.
+// Sin batería: siempre conectada por USB-C, no se muestra icono de batería.
 
 #include "wifi_board.h"
 #include "codecs/no_audio_codec.h"
@@ -9,7 +10,6 @@
 #include "button.h"
 #include "config.h"
 #include "mcp_server.h"
-#include "adc_battery_monitor.h"
 #include "system_reset.h"
 
 #include <esp_log.h>
@@ -109,7 +109,6 @@ private:
     Button talk_button_;
     LcdDisplay* display_ = nullptr;
     i2c_master_bus_handle_t i2c_bus_ = nullptr;
-    AdcBatteryMonitor* battery_monitor_ = nullptr;
     esp_timer_handle_t emotion_reset_timer_ = nullptr;
 
     void InitializeI2c() {
@@ -190,12 +189,6 @@ private:
         });
     }
 
-    void InitializeBattery() {
-        battery_monitor_ = new AdcBatteryMonitor(BATTERY_ADC_UNIT, BATTERY_ADC_CHANNEL,
-                                                 BATTERY_DIVIDER_UPPER, BATTERY_DIVIDER_LOWER,
-                                                 GPIO_NUM_NC);
-    }
-
     // --- Reacción al movimiento -------------------------------------------
     static void EmotionResetCallback(void* arg) {
         auto* self = static_cast<MascotaLcd2Board*>(arg);
@@ -274,7 +267,6 @@ public:
         InitializeSpi();
         InitializeLcdDisplay();
         InitializeButtons();
-        InitializeBattery();
         InitializeMotion();
         GetBacklight()->RestoreBrightness();
     }
@@ -293,16 +285,6 @@ public:
     virtual Backlight* GetBacklight() override {
         static PwmBacklight backlight(DISPLAY_BACKLIGHT_PIN, DISPLAY_BACKLIGHT_OUTPUT_INVERT);
         return &backlight;
-    }
-
-    virtual bool GetBatteryLevel(int& level, bool& charging, bool& discharging) override {
-        if (battery_monitor_ == nullptr) {
-            return false;
-        }
-        charging = battery_monitor_->IsCharging();
-        discharging = battery_monitor_->IsDischarging();
-        level = battery_monitor_->GetBatteryLevel();
-        return true;
     }
 };
 
