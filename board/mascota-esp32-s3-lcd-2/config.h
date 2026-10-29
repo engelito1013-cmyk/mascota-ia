@@ -3,6 +3,7 @@
 
 // Mascota IA - Waveshare ESP32-S3-LCD-2 (2", 240x320, ST7789T3)
 // + micrófono INMP441 + amplificador MAX98357A + botón para hablar.
+// Sin batería: siempre alimentada por USB-C.
 // Si cableas un módulo en otro pin, cambia SOLO el número de GPIO aquí.
 
 #include <driver/gpio.h>
@@ -50,11 +51,5 @@
 // --- Sensor de movimiento QMI8658 (interno de la placa) ---
 #define IMU_I2C_SDA_PIN         GPIO_NUM_48
 #define IMU_I2C_SCL_PIN         GPIO_NUM_47
-
-// --- Medida de batería (interna, GPIO5 = ADC1 canal 4) ---
-#define BATTERY_ADC_UNIT        ADC_UNIT_1
-#define BATTERY_ADC_CHANNEL     ADC_CHANNEL_4
-#define BATTERY_DIVIDER_UPPER   200000
-#define BATTERY_DIVIDER_LOWER   100000
 
 #endif // _BOARD_CONFIG_H_
