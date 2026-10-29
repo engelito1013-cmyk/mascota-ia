@@ -1,0 +1,60 @@
+name: Compilar firmware de la mascota
+
+on:
+  workflow_dispatch:
+    inputs:
+      idioma:
+        description: "Idioma de los avisos de voz y pantalla"
+        default: "es-ES"
+        type: string
+      palabra_activacion:
+        description: "Palabra para despertarla (hiesp = 'Hi ESP', disabled = solo botón)"
+        default: "hiesp"
+        type: string
+      version_xiaozhi:
+        description: "Versión (commit) del firmware xiaozhi-esp32 que se usa como base"
+        default: "50e96be39844851579fe7fa9c8f52626b708be5b"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  compilar:
+    runs-on: ubuntu-latest
+    container:
+      image: espressif/idf:release-v6.1
+    steps:
+      - name: Descargar los archivos de la mascota
+        uses: actions/checkout@v4
+        with:
+          path: mascota
+
+      - name: Descargar xiaozhi-esp32
+        shell: bash
+        run: |
+          git config --global --add safe.directory '*'
+          git clone https://github.com/78/xiaozhi-esp32.git xiaozhi
+          cd xiaozhi
+          git checkout "${{ inputs.version_xiaozhi }}"
+
+      - name: Añadir la placa de la mascota
+        shell: bash
+        run: python mascota/scripts/aplicar_mascota.py xiaozhi mascota/board/mascota-esp32-s3-lcd-2
+
+      - name: Compilar
+        shell: bash
+        run: |
+          source "$IDF_PATH/export.sh"
+          cd xiaozhi
+          python scripts/build.py mascota-esp32-s3-lcd-2 \
+            --name mascota-esp32-s3-lcd-2 \
+            --language "${{ inputs.idioma }}" \
+            --wake-word "${{ inputs.palabra_activacion }}"
+
+      - name: Guardar el firmware para descargarlo
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-mascota
+          path: xiaozhi/build/merged-binary.bin
+          if-no-files-found: error
