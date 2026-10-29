@@ -1,0 +1,10 @@
+{
+    "type": "mascota-esp32-s3-lcd-2",
+    "target": "esp32s3",
+    "builds": [
+        {
+            "name": "mascota-esp32-s3-lcd-2",
+            "sdkconfig_append": []
+        }
+    ]
+}
