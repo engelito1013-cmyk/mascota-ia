@@ -6,6 +6,7 @@
 #include "wifi_board.h"
 #include "codecs/no_audio_codec.h"
 #include "display/lcd_display.h"
+#include "display/lvgl_display/lvgl_theme.h"
 #include "application.h"
 #include "button.h"
 #include "config.h"
@@ -24,6 +25,31 @@
 #include <cstdlib>
 
 #define TAG "MascotaLCD2"
+
+// ---------------------------------------------------------------------------
+// Cara de la mascota: fondo negro y ojos animados (colección "otto-gif")
+// ---------------------------------------------------------------------------
+class MascotaDisplay : public SpiLcdDisplay {
+public:
+    MascotaDisplay(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_handle_t panel,
+                   int width, int height, int offset_x, int offset_y,
+                   bool mirror_x, bool mirror_y, bool swap_xy)
+        : SpiLcdDisplay(panel_io, panel, width, height, offset_x, offset_y,
+                        mirror_x, mirror_y, swap_xy) {}
+
+    virtual void SetupUI() override {
+        if (setup_ui_called_) {
+            return;
+        }
+        SpiLcdDisplay::SetupUI();
+        // Tema oscuro: fondo negro para que los ojos resalten
+        auto* dark_theme = LvglThemeManager::GetInstance().GetTheme("dark");
+        if (dark_theme != nullptr) {
+            SetTheme(dark_theme);
+        }
+        SetEmotion("neutral");
+    }
+};
 
 // ---------------------------------------------------------------------------
 // Sensor de movimiento QMI8658 (solo acelerómetro, para detectar sacudidas)
@@ -163,7 +189,7 @@ private:
         esp_lcd_panel_mirror(panel, DISPLAY_MIRROR_X, DISPLAY_MIRROR_Y);
         esp_lcd_panel_disp_on_off(panel, true);
 
-        display_ = new SpiLcdDisplay(panel_io, panel, DISPLAY_WIDTH, DISPLAY_HEIGHT,
+        display_ = new MascotaDisplay(panel_io, panel, DISPLAY_WIDTH, DISPLAY_HEIGHT,
                                      DISPLAY_OFFSET_X, DISPLAY_OFFSET_Y, DISPLAY_MIRROR_X,
                                      DISPLAY_MIRROR_Y, DISPLAY_SWAP_XY);
     }
