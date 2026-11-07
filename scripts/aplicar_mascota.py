@@ -21,7 +21,7 @@ CMAKE_BLOCK = (
     f"    set(BOARD_DIR \"{BOARD_DIR}\")\n"
     f"    set(BUILTIN_TEXT_FONT font_noto_sans_basic_20_4)\n"
     f"    set(BUILTIN_ICON_FONT font_material_symbols_20_4)\n"
-    f"    set(DEFAULT_EMOJI_COLLECTION noto-color-emoji_128)\n"
+    f"    set(DEFAULT_EMOJI_COLLECTION otto-gif)\n"
 )
 
 
