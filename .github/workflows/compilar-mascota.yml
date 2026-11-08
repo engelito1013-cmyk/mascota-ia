@@ -52,9 +52,28 @@ jobs:
             --language "${{ inputs.idioma }}" \
             --wake-word "${{ inputs.palabra_activacion }}"
 
+      - name: Preparar instrucciones de grabado
+        shell: bash
+        run: |
+          cat > xiaozhi/build/COMO_GRABAR.txt <<'EOF'
+          ACTUALIZAR (conserva el WiFi y la vinculacion con xiaozhi.me) - lo normal:
+            En la herramienta de Espressif, SIN pulsar Erase Flash, anade dos filas:
+              0x20000   ->  xiaozhi.bin            (el programa)
+              0x800000  ->  generated_assets.bin   (caras, fuentes y sonidos)
+            Pulsa Program y, al terminar, desenchufa y vuelve a enchufar la placa.
+
+          INSTALACION COMPLETA (borra el WiFi y la vinculacion):
+              0x0       ->  merged-binary.bin
+            Usalo solo la primera vez o si la placa no arranca.
+          EOF
+
       - name: Guardar el firmware para descargarlo
         uses: actions/upload-artifact@v4
         with:
           name: firmware-mascota
-          path: xiaozhi/build/merged-binary.bin
+          path: |
+            xiaozhi/build/merged-binary.bin
+            xiaozhi/build/xiaozhi.bin
+            xiaozhi/build/generated_assets.bin
+            xiaozhi/build/COMO_GRABAR.txt
           if-no-files-found: error
